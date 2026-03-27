@@ -1,0 +1,15 @@
+[book]
+title = "Agent Memory Patterns"
+authors = ["Ratnopam Chakrabarti"]
+language = "en"
+src = "src"
+description = "Architecture and design patterns for persistent AI agent memory"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "ayu"
+git-repository-url = "https://github.com/ratnopam/agent-memory-patterns"
+edit-url-template = "https://github.com/ratnopam/agent-memory-patterns/edit/main/{path}"
