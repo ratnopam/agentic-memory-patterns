@@ -1,0 +1,52 @@
+name: Build and Release PDF
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pandoc and LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-latex-base texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra
+
+      - name: Combine chapters
+        run: |
+          cat src/introduction.md \
+              src/ch01-context-is-not-memory.md \
+              src/ch02-landscape.md \
+              src/ch03-five-questions.md \
+              src/ch04-memory-formation.md \
+              src/ch05-cross-session.md \
+              src/ch06-scoring-lifecycle.md \
+              src/ch07-infrastructure-design.md \
+              src/ch08-case-study.md \
+              src/references.md > full-book.md
+
+      - name: Build PDF
+        run: |
+          pandoc full-book.md -o agent-memory-patterns.pdf \
+            --pdf-engine=pdflatex \
+            --toc \
+            --toc-depth=2 \
+            -V geometry:margin=1in \
+            -V fontsize=11pt \
+            -V title="Agent Memory Patterns" \
+            -V subtitle="Architecture and Design for Persistent AI Agent Memory" \
+            -V author="Ratnopam Chakrabarti" \
+            -V date="$(date +'%B %Y')"
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: agent-memory-patterns.pdf
+          generate_release_notes: true
