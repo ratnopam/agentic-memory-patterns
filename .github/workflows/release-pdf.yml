@@ -17,7 +17,7 @@ jobs:
       - name: Install pandoc and LaTeX
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-latex-base texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra
+          sudo apt-get install -y pandoc texlive-xetex texlive-latex-recommended texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra lmodern
 
       - name: Combine chapters
         run: |
@@ -35,11 +35,12 @@ jobs:
       - name: Build PDF
         run: |
           pandoc full-book.md -o agent-memory-patterns.pdf \
-            --pdf-engine=pdflatex \
+            --pdf-engine=xelatex \
             --toc \
             --toc-depth=2 \
             -V geometry:margin=1in \
             -V fontsize=11pt \
+            -V monofont="DejaVu Sans Mono" \
             -V title="Agent Memory Patterns" \
             -V subtitle="Architecture and Design for Persistent AI Agent Memory" \
             -V author="Ratnopam Chakrabarti" \
