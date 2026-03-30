@@ -1,10 +1,8 @@
 # Scoring, Decay, and Lifecycle Management
 
-When an agent searches memory, it should see the most useful results first — not just the most semantically similar. This chapter examines how to rank memories, how they should age, and the full lifecycle management problem that remains largely unsolved across the industry.
+A common surprise when first deploying vector search for agent memory: the results are semantically relevant but practically unhelpful. A search for "pod crashes" returns memories about pod crashes — good. But the top result is an untested observation from three months ago, while a proven fix from last week is buried at position four. Both have similar cosine scores; the difference is that one has been used successfully dozens of times and the other was never validated.
 
-## Beyond Cosine Similarity
-
-Most vector search systems rank results by cosine similarity — how close the query embedding is to each memory's embedding. This captures semantic relevance but misses critical signals:
+This reveals a fundamental limitation of pure vector search for agent memory. Cosine similarity captures text relevance but not trustworthiness, freshness, or track record. The scoring function needs to reflect whether a memory is worth acting on — not just whether it's semantically related to the query.
 
 - **Is this memory trustworthy?** Has it led to good outcomes when used before?
 - **Is this memory fresh?** Was it verified recently, or is it from months ago?
@@ -175,11 +173,13 @@ As memory stores grow, not all memories need the same access characteristics:
 
 | Tier | Contents | Access Pattern | Storage |
 |------|----------|---------------|---------|
-| **Hot** | Active session, recently used | Sub-millisecond | In-memory or fast database |
-| **Warm** | Recent sessions, frequently recalled | Low milliseconds | Primary database (pgvector, etc.) |
+| **Hot** | Active session, recently used | Sub-millisecond | In-memory or fast key-value store |
+| **Warm** | Recent sessions, frequently recalled | Low milliseconds | Primary database (vector or relational) |
 | **Cold** | Historical, rarely accessed | Higher latency acceptable | Object storage, archival database |
 
 Promotion (cold → warm on frequent access) and demotion (warm → cold after TTL) should be automated based on the same usage signals that drive scoring.
+
+In practice, tiering often aligns with **multi-backend composition** — different storage engines for different tiers, connected by background processing. Hot memories in a fast key-value store for sub-millisecond session lookups, warm memories in a vector database for semantic search, cold memories in object storage for archival. Chapter 7 explores this composition pattern in detail.
 
 ### The Never-Delete Principle
 
@@ -201,18 +201,12 @@ This maps to what neuroscience calls hippocampal consolidation — the process t
 
 The storage layer should expose batch APIs that support consolidation workflows. The consolidation logic itself — what to merge, how to summarize, which contradictions to resolve — is intelligence-layer work, handled by the agent, an orchestrator, or a scheduled pipeline.
 
-## Key Takeaways
+## Closing Thoughts
 
-1. **Cosine similarity alone is insufficient for ranking.** Add recency decay, success rate, and access frequency. The Park et al. formula is a strong starting point.
+## Closing Thoughts
 
-2. **Deterministic and learned scoring are complementary,** not competing. Infrastructure provides deterministic scoring on every search. Intelligence (RL, LLM) can rerank on top.
+Of all the improvements one can make to an agent memory system, the most impactful is often the simplest: access tracking. A counter that increments every time a memory is recalled, combined with power law recency decay, transforms retrieval quality more than sophisticated embedding models or prompt engineering.
 
-3. **Power law decay preserves long-term knowledge** better than exponential. Important experiences from months ago should remain retrievable.
+Scoring doesn't need to be sophisticated to be effective. Start with cosine similarity plus recency plus access frequency. Add outcome tracking when agents begin reporting whether recalled memories were helpful. Consider learned scoring when the training infrastructure exists and the use case demands it.
 
-4. **Lifecycle management is the biggest operational gap** in agent memory today. Implement lifecycle states, soft TTL with access renewal, and tiered storage.
-
-5. **Track usage signals automatically** on every retrieval. Access count, recency, and outcomes are the foundation for both scoring and lifecycle management.
-
-6. **Never permanently delete memories.** Soft-delete to archived. Storage is cheap; lost knowledge is expensive.
-
-7. **Consolidation is a first-class concern.** The storage layer should support batch operations for between-session processing — merging, summarizing, promoting, and archiving.
+Lifecycle management — the progression from active to deprecated to expired to archived — is the piece most teams skip. It's also the piece that matters most at scale. A memory system that only grows and never forgets will eventually drown in its own noise. The recommendation is to build lifecycle states in from the start, even if the initial policies are simple. Tuning policies later is straightforward; retrofitting lifecycle management into a system designed without it is significantly harder.

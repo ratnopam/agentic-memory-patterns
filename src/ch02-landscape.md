@@ -164,6 +164,11 @@ How do memories evolve?
 
 Who manages memory?
   └─ The agent vs The orchestrator vs A managed service vs RL-trained policy
+
+How is storage architected?
+  └─ Single backend vs Multi-backend composition (key-value + search engine)
 ```
+
+One dimension that deserves special attention is **storage architecture.** Most systems use a single backend for all memory operations. But production deployments increasingly reveal that different access patterns — fast session lookups, semantic similarity search, analytics — are best served by different storage engines working together. The multi-backend composition pattern (a fast key-value store as the source of truth, with a search engine as a derived semantic index) is emerging as a best practice for production-scale agent memory. Chapter 7 explores this in detail.
 
 The chapters that follow explore each of these design dimensions in depth, examining the trade-offs and patterns that inform good architectural choices.

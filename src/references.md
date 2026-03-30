@@ -56,5 +56,5 @@
 - **Letta / MemGPT** — Agent framework with self-editing memory. [github.com/letta-ai/letta](https://github.com/letta-ai/letta)
 - **Zep / Graphiti** — Temporal knowledge graph for agent memory. [github.com/getzep/graphiti](https://github.com/getzep/graphiti)
 - **kagent** — Kubernetes-native AI agent framework. [github.com/kagent-dev/kagent](https://github.com/kagent-dev/kagent)
-- **engram** — Pluggable memory infrastructure (reference implementation). [github.com/ratnopam/engram](https://github.com/ratnopam/engram)
+- **engram** — Pluggable memory infrastructure (reference implementation for this book). Open-source release forthcoming.
 - **pgvector** — Vector similarity search for PostgreSQL. [github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)

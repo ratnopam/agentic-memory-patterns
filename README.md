@@ -30,9 +30,7 @@ Based on analysis of recent research (AgeMem, A-Mem, Generative Agents, MemGPT, 
 
 ## Reference Implementation
 
-This book is accompanied by an open-source reference implementation:
-
-- **[engram](https://github.com/ratnopam/engram)** — Pluggable memory infrastructure for AI agents (Python, Apache 2.0)
+The design patterns in this book are grounded in a working implementation deployed on Kubernetes. A reference implementation is being prepared for open-source release and will be linked here when available.
 
 ## Key References
 

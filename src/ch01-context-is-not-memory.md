@@ -1,8 +1,10 @@
 # Why Context Windows Are Not Memory
 
-Context windows are getting larger — 200K tokens, 1M tokens, and architectures like Titans (Behrouz et al., 2024) that push toward 2M+ tokens with neural long-term memory modules built into the model itself. A reasonable question follows: will bigger context windows eliminate the need for external memory?
+A common first reaction to the agent memory problem: "Why bother? Context windows are 200K tokens now. Just stuff everything in the prompt."
 
-The short answer is no. But the relationship between context and memory is more nuanced than "one replaces the other."
+It's worth testing that assumption. For a single session, large context works surprisingly well. The agent holds the entire conversation, all retrieved documents, and a reasonable amount of history. But the next day, when the same user asks a follow-up question, the agent has no idea what was discussed. Two hundred thousand tokens of capacity, and it can't remember yesterday.
+
+Context windows are getting larger — 200K tokens, 1M tokens, and architectures like Titans (Behrouz et al., 2024) that push toward 2M+ tokens with neural long-term memory modules built into the model. The relationship between context and memory is more nuanced than "one replaces the other," and understanding the distinction is essential for designing memory systems.
 
 ## Context as Working Memory
 
@@ -102,8 +104,12 @@ The bottom three — semantic, episodic, procedural — constitute long-term mem
 
 This infrastructure is the focus of the chapters that follow.
 
-## Key Takeaway
+## The Practical Boundary
 
-The context window handles the "right now." Memory handles the "learned from before." Bigger windows make agents better at the current task. Memory makes agents better over time.
+In practice, here's where the boundary tends to fall:
 
-The question is not whether agents need memory — the research consensus is clear that they do. The questions are: when should they store? what should they store? how should they retrieve? how should memories age and evolve? Those are the subjects of the chapters that follow.
+If the information was generated during the current conversation and the agent needs it for the current task, it belongs in the context window. The checkpointer handles persistence within the session.
+
+If the information needs to survive a pod restart, a new session, or be accessible to a different agent — it needs external memory. No context window, however large, solves this.
+
+The real question isn't whether agents need memory — the research and practical experience both confirm they do. The real questions are harder: when should they store? what should they store? how should they retrieve? how should memories age? Those questions are the subject of the rest of this book.

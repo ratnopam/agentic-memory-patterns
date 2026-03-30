@@ -1,6 +1,8 @@
 # Cross-Session Memory Without Contamination
 
-Cross-session memory is what separates a knowledgeable agent from a stateless one. But sharing knowledge across sessions introduces real risks. This chapter examines the contamination problem, explores scoping patterns, and proposes the knowledge building pipeline as an architectural pattern.
+There's a moment of genuine excitement the first time an agent recalls a memory from a previous session and uses it to resolve an incident faster. That excitement fades quickly the first time the agent recalls a six-month-old configuration that has since been changed, applies the outdated fix, and makes things worse. Cross-session memory is a double-edged sword.
+
+Cross-session memory is what separates a knowledgeable agent from a stateless one. But sharing knowledge across sessions introduces real risks that aren't obvious until you encounter them. This chapter examines the contamination problem, explores scoping patterns, and proposes the knowledge building pipeline as an architectural pattern.
 
 ## The Contamination Problem
 

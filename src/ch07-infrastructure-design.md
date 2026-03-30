@@ -94,13 +94,101 @@ default_backend: pgvector    # change to "opensearch", "sqlite", etc.
 
 The agent code never changes when backends are swapped. This is the core portability guarantee.
 
-| Backend | Strength | Scale | Use Case |
-|---------|----------|-------|----------|
-| **PostgreSQL + pgvector** | HNSW cosine similarity, uses existing Postgres | Millions | Production, Kubernetes |
-| **OpenSearch** | Hybrid vector + keyword search with rank fusion | Billions | When keyword matching matters alongside semantic |
-| **SQLite + sqlite-vec** | Zero install, single file, portable | ~100K | On-device, development, air-gapped |
+| Backend Type | Examples | Strength | Scale | Use Case |
+|-------------|----------|----------|-------|----------|
+| **Vector database** | pgvector, Milvus | Cosine similarity with HNSW indexes | Millions | Semantic search over curated memories |
+| **Search engine** | OpenSearch, Elasticsearch | Hybrid vector + keyword with rank fusion | Billions | When keyword matching matters alongside semantic |
+| **Key-value store** | DynamoDB, Redis | Sub-millisecond exact lookups, TTL support | Unlimited | Session state, user defaults, fast retrieval by ID |
+| **Embedded database** | SQLite + sqlite-vec | Zero install, single file, portable | ~100K | On-device, development, air-gapped |
 
-Adding a new backend (Redis, DynamoDB, Milvus, or any future vector store) means implementing the interface and registering it. No changes to the core library or existing backends. Third-party packages can add backends without forking.
+Adding a new backend means implementing the interface and registering it. No changes to the core library or existing backends. Third-party packages can add backends without forking.
+
+### Single Backend vs Multi-Backend Composition
+
+The simplest deployment uses one backend for everything — vector search, session state, user defaults, and lifecycle management all in the same database. This is the right starting point. One connection to manage, one schema, one operational burden.
+
+But as systems scale, **access patterns diverge:**
+
+| Access Pattern | Characteristic | Best Served By |
+|---------------|---------------|---------------|
+| "What are this user's defaults?" | Exact key lookup, sub-millisecond | Key-value store |
+| "Find memories similar to this incident" | Vector similarity, top-K | Vector database |
+| "Show me all incidents containing 'connection pool'" | Full-text keyword search | Search engine |
+| "Get all memories from session abc-123" | Range query on sort key | Key-value store |
+| "What patterns exist across all users?" | Aggregation, analytics | Search engine |
+
+When these patterns coexist, a single backend is either over-provisioned for some workloads or under-optimized for others. This is where multi-backend composition becomes valuable.
+
+### The Composition Pattern
+
+Rather than routing all operations through one backend, the composition pattern uses different backends for different access patterns, connected by a background processing layer:
+
+```
+Agent Interaction
+    │
+    ├── Fast writes ──→ Primary Store (key-value / relational)
+    │                   Source of truth for all memories
+    │                   Session state, user defaults, raw records
+    │                   Sub-millisecond lookups by ID/session/user
+    │
+    │                        │
+    │                        ▼ Background process
+    │                   Extract insights, generate embeddings,
+    │                   build semantic index
+    │                        │
+    │                        ▼
+    └── Semantic search ──→ Search Index (vector / search engine)
+                            Semantic similarity search
+                            Hybrid keyword + vector queries
+                            Analytics and aggregation
+```
+
+**The primary store** handles writes, exact lookups, session retrieval, and serves as the source of truth. It needs to be fast and reliable — key-value stores excel here.
+
+**The search index** handles semantic retrieval, keyword search, and analytics. It's populated asynchronously from the primary store. It can be rebuilt from the primary store if needed — it's a derived view, not the source of truth.
+
+**The background process** bridges them — extracting insights, generating embeddings, and indexing into the search layer. This is the same "sleep-time compute" pattern from Chapter 6, applied at the storage architecture level.
+
+### When to Use Composition
+
+| Start with... | Evolve to composition when... |
+|---------------|-------------------------------|
+| Single vector database (pgvector) | You need sub-millisecond session lookups AND semantic search, and one database can't optimize both |
+| Single search engine (OpenSearch) | You need a cheaper, faster primary store for writes and exact lookups |
+| Single key-value store | You need semantic similarity search that key-value can't provide |
+
+**The decision framework:**
+
+- **Predictable access patterns, moderate scale:** Single backend is sufficient. Don't add operational complexity you don't need.
+- **Mixed access patterns, production scale:** Composition gives each workload the right storage engine. The operational cost of two systems is offset by better performance and cost efficiency.
+- **Global, multi-region deployment:** Key-value stores with global replication serve as the primary store; regional search indexes handle local semantic queries.
+
+### Composition in the Infrastructure Layer
+
+The memory infrastructure module should support composition through configuration, not code changes:
+
+```yaml
+backends:
+  primary:
+    provider: dynamodb          # source of truth, fast lookups
+    config:
+      table_name: agent-memory
+      region: us-west-2
+
+  search:
+    provider: opensearch        # semantic search index
+    config:
+      endpoint: https://search.internal
+      index_name: memory-index
+
+routing:
+  writes: primary               # all writes go to primary
+  exact_lookups: primary        # get by ID, session, user
+  semantic_search: search       # similarity queries
+  sync: background              # async replication primary → search
+```
+
+The agent calls the same API (`add`, `search`, `get`). The infrastructure routes operations to the appropriate backend based on the access pattern. This keeps the agent code unchanged whether running against a single SQLite file or a composed DynamoDB + OpenSearch architecture.
 
 ## Policy-Based Scoring
 
@@ -166,6 +254,8 @@ This boundary is not a limitation — it's a design choice that keeps the storag
 
 4. **Backend abstraction** means swapping storage is a config change. New backends can be added by third parties without forking.
 
-5. **Scoring is deterministic and configurable.** The formula combines cosine similarity with usage signals. No LLM on the retrieval path. Intelligence layers can rerank on top.
+5. **Multi-backend composition** addresses divergent access patterns at scale. A fast key-value store for session lookups and exact-match retrieval, a vector/search engine for semantic similarity — connected by background processing. Start with a single backend; compose when access patterns diverge.
 
-6. **The infrastructure-intelligence boundary is explicit.** The storage layer handles persistence, indexing, scoring, and lifecycle. Intelligence (extraction, evolution, RL policies) operates above it.
+6. **Scoring is deterministic and configurable.** The formula combines cosine similarity with usage signals. No LLM on the retrieval path. Intelligence layers can rerank on top.
+
+7. **The infrastructure-intelligence boundary is explicit.** The storage layer handles persistence, indexing, scoring, and lifecycle. Intelligence (extraction, evolution, RL policies) operates above it.

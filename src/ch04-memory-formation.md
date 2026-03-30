@@ -4,9 +4,11 @@ This chapter addresses two of the most consequential design decisions: when shou
 
 ## The Trigger Problem
 
-Consider an operations agent diagnosing a production incident. During the session it reads logs, checks dashboards, runs diagnostic commands, identifies the root cause, applies a fix, and verifies the resolution. What should it store in long-term memory? Everything? Just the root cause and fix? The full investigation path?
+A common early mistake when building agent memory: storing a record after every successful tool call — every kubectl output, every log snippet, every metric check. Within a day, the memory store has thousands of records. When the agent searches for "OOM kills," it gets back a wall of raw output fragments instead of the one concise record that actually captures the root cause and fix.
 
-The answer depends on your architecture's philosophy toward memory formation.
+The problem isn't storing too much — Park et al. (2023) proved that storing everything can work. The problem is storing the wrong *kind* of everything. Raw tool outputs aren't memories. A memory is the distilled knowledge: "OOM kills in payment-service caused by connection pool leak. Fix: set maxPoolSize=50." That distinction between raw data and curated knowledge turns out to be one of the most important design decisions in any memory system.
+
+What should an agent store in long-term memory? The answer depends on the architecture's philosophy toward memory formation.
 
 ## Five Trigger Patterns
 

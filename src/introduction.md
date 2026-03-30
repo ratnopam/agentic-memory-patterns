@@ -1,22 +1,18 @@
 # Introduction
 
-Every AI agent built today has amnesia.
+While exploring how to add persistent memory to an operations agent — one that diagnoses Kubernetes incidents, runs kubectl commands, and checks dashboards — a frustrating pattern emerged. The agent was good at its job within a session. But every new session was a blank slate. The incident it resolved yesterday? Gone. The runbook it discovered worked? Forgotten. The user's preferred cluster? Ask again.
 
-Your operations agent diagnoses a production incident, traces the root cause, applies a fix — and next week, when the exact same pattern occurs, it starts from scratch. Same investigation steps. Same compute cost. It learned nothing.
+A smarter model doesn't help if the agent can't remember what it learned yesterday.
 
-This isn't a failure of any particular framework or service. It's a missing layer. Agent frameworks excel at reasoning, tool use, and orchestration. But persistent, searchable, cross-session memory — the kind that lets an agent accumulate expertise over time — is still an open architectural problem.
+The natural next step was to look for a memory solution. What emerged was a fragmented landscape — dozens of tools, each making different assumptions about what memory should be, where it should live, and who should manage it. Some required LLM calls on every write. Some locked you into a specific framework. Some worked well on a laptop but had no story for Kubernetes. None of them cleanly separated the question of *how memories are created* from the question of *where they're stored and how they're found.*
+
+This book is what I wish existed when I started thinking through the problem.
 
 ## What This Book Is
 
-This is a design and architecture book about **agent memory as a problem domain**. It does not prescribe a single "best" approach. Instead, it:
+This is a book about thinking through agent memory before building it. The design space is larger than it first appears, and the choices you make early — what to store, how to score, whether memories evolve — cascade through the entire system.
 
-- Examines the fundamental challenges that make agent memory hard
-- Surveys the architectural patterns that have emerged across research and production systems
-- Identifies open questions and design trade-offs that every memory system must navigate
-- Proposes design principles for building modular, extensible memory infrastructure
-- Illustrates one implementation path as a reference (not the only path)
-
-The goal is to help you think clearly about agent memory before committing to a particular implementation. The design space is larger than it first appears, and the choices you make early — what to store, how to score, whether memories evolve — cascade through the entire system.
+This book doesn't prescribe a single "best" approach. After surveying the research, exploring multiple implementation paths, and deploying a working system in production, the honest conclusion is that the right architecture depends heavily on your constraints. What this book offers is a framework for thinking about those constraints clearly — the questions to ask, the patterns that have emerged, and the trade-offs that aren't obvious until you're deep in the design.
 
 ## What This Book Does NOT Cover
 
