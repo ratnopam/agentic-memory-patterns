@@ -1,4 +1,4 @@
-# Case Study: From Key-Value to Semantic Memory on Kubernetes
+# Chapter 8: From Key-Value to Semantic Memory on Kubernetes
 
 This chapter describes a real migration: replacing key-value memory with vector-indexed semantic memory on a Kubernetes-native agent platform. The goal is not to promote a specific tool but to illustrate the practical decisions, trade-offs, and surprises that arise when adding persistent memory to a production agent.
 
@@ -118,23 +118,9 @@ This works because the memory module stores data in an external database, not in
 
 ## Architecture Change
 
-```
-Before:
-  Agent Pod → Key-Value Store (3 operations, exact match only)
+The architecture shift was straightforward. Before the migration, the agent pod connected to a key-value store for three exact-match operations. After the migration, the agent pod imports a memory module (a Python library) that connects to PostgreSQL with the pgvector extension. The database holds an `agent_memory` table with an HNSW vector index for cosine similarity search, a namespace prefix index, JSONB metadata indexes, and scoring columns for tracking access patterns. Embedding generation is handled by a cloud embedding API, authenticated through the pod's service account.
 
-After:
-  Agent Pod → Memory Module (Python lib) → PostgreSQL + pgvector
-                  │                              │
-                  │                              ├── agent_memory table
-                  │                              ├── HNSW vector index
-                  │                              └── Scoring columns
-                  │
-                  └── Cloud Embedding API (1024-dim vectors)
-```
-
-**What was removed:** Key-value store dependency.
-
-**What was added:** Memory module (Python library in the container), pgvector extension on existing database, embedding API calls.
+The key-value store dependency was removed entirely. What was added: the memory module as a Python library in the container, the pgvector extension on the existing database, and embedding API calls for converting text to vectors.
 
 **What stayed the same:** The agent's graph structure, its operations tools, its deployment pipeline, its Kubernetes CRD.
 

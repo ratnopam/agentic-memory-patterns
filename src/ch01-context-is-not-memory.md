@@ -1,4 +1,4 @@
-# Why Context Windows Are Not Memory
+# Chapter 1: Why Context Windows Are Not Memory
 
 A common first reaction to the agent memory problem: "Why bother? Context windows are 200K tokens now. Just stuff everything in the prompt."
 
@@ -51,39 +51,18 @@ These are structured data fields that belong in a database with typed records, i
 
 Human cognition operates with a memory hierarchy. Agent systems are converging on a similar structure:
 
-```
-┌──────────────────────────────────────────────────────┐
-│  Parametric Memory (model weights)                    │
-│  Knowledge baked into the model during training       │
-│  Duration: permanent (until fine-tuned)               │
-├──────────────────────────────────────────────────────┤
-│  Working Memory (context window)                      │
-│  Active reasoning during current session              │
-│  Duration: one session                                │
-├──────────────────────────────────────────────────────┤
-│  Short-Term Memory (session state / checkpointer)     │
-│  Conversation history within a session                │
-│  Duration: one session, persisted for continuity      │
-├──────────────────────────────────────────────────────┤
-│  Long-Term Memory (external, explicit)                │
-│  Knowledge that persists across sessions              │
-│                                                       │
-│  ┌─ Semantic: facts and stable knowledge              │
-│  ├─ Episodic: events and experiences with outcomes    │
-│  └─ Procedural: skills, workflows, runbooks           │
-└──────────────────────────────────────────────────────┘
-```
+![Memory Hierarchy](images/memory-hierarchy.svg)
 
 Recent work like Titans (Behrouz et al., 2024) explores building long-term memory into the neural architecture itself — a neural memory module that learns to memorize historical context as part of the model's forward pass. This is a form of **parametric long-term memory** — implicit, learned, and embedded in model weights.
 
 External memory systems (the focus of this book) provide **explicit long-term memory** — content that is stored, retrieved, and managed outside the model. Both forms have roles to play:
 
-| | Parametric (in-model) | Explicit (external) |
-|--|----------------------|---------------------|
-| **What it stores** | Patterns, associations | Specific facts, events, procedures |
-| **How it's accessed** | Implicit (during inference) | Explicit (search query → results) |
-| **Mutability** | Changes with fine-tuning | Changes with write operations |
-| **Explainability** | Opaque | Auditable, traceable |
+| Dimension | Parametric | Explicit |
+|-----------|-----------|----------|
+| **Stores** | Patterns, associations | Facts, events, procedures |
+| **Access** | Implicit, during inference | Search query returns results |
+| **Mutability** | Changes with fine-tuning | Changes with write ops |
+| **Explainability** | Opaque | Auditable |
 | **Portability** | Tied to the model | Backend-independent |
 
 The two are complementary. A model with strong parametric memory (from pre-training or fine-tuning) benefits from explicit memory for the specific, evolving, and auditable knowledge that changes faster than retraining cycles.
@@ -94,11 +73,11 @@ The CoALA framework (Sumers et al., 2023) formalized the mapping between cogniti
 
 | Memory Type | Cognitive Role | Agent Equivalent | Persistence |
 |------------|---------------|-----------------|-------------|
-| **Working** | Active thought | Context window | Session |
-| **Short-term** | Recent recall | Checkpointer state | Session |
-| **Semantic** | Facts and knowledge | Stored facts, domain knowledge | Cross-session |
-| **Episodic** | Personal experiences | Incident records, task outcomes | Cross-session |
-| **Procedural** | Skills, how-to | Runbooks, workflows, tool patterns | Cross-session |
+| **Working** | Active thought | Context window | Current session only |
+| **Short-term** | Recent recall | Checkpointer state | Current session only |
+| **Semantic** | Facts, knowledge | Domain knowledge | Persists across sessions |
+| **Episodic** | Experiences | Incident records, outcomes | Persists across sessions |
+| **Procedural** | Skills, how-to | Runbooks, workflows | Persists across sessions |
 
 The bottom three — semantic, episodic, procedural — constitute long-term memory. They require storage infrastructure that outlives any single session, supports search by meaning, and manages knowledge over time.
 

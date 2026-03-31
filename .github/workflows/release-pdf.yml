@@ -19,25 +19,39 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pandoc texlive-xetex texlive-latex-recommended texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra lmodern
 
-      - name: Combine chapters
+      - name: Combine chapters with page breaks
         run: |
-          cat src/introduction.md \
-              src/ch01-context-is-not-memory.md \
-              src/ch02-landscape.md \
-              src/ch03-five-questions.md \
-              src/ch04-memory-formation.md \
-              src/ch05-cross-session.md \
-              src/ch06-scoring-lifecycle.md \
-              src/ch07-infrastructure-design.md \
-              src/ch08-case-study.md \
-              src/references.md > full-book.md
+          BREAK=$'\n\\newpage\n'
+          {
+            cat src/introduction.md
+            echo "$BREAK"
+            cat src/ch01-context-is-not-memory.md
+            echo "$BREAK"
+            cat src/ch02-landscape.md
+            echo "$BREAK"
+            cat src/ch03-five-questions.md
+            echo "$BREAK"
+            cat src/ch04-memory-formation.md
+            echo "$BREAK"
+            cat src/ch05-cross-session.md
+            echo "$BREAK"
+            cat src/ch06-scoring-lifecycle.md
+            echo "$BREAK"
+            cat src/ch07-infrastructure-design.md
+            echo "$BREAK"
+            cat src/ch08-case-study.md
+            echo "$BREAK"
+            cat src/references.md
+          } > full-book.md
+          # Fix image paths (src/images/ -> src/images/ relative to repo root)
+          sed -i 's|images/|src/images/|g' full-book.md
 
       - name: Build PDF
         run: |
           pandoc full-book.md -o agent-memory-patterns.pdf \
             --pdf-engine=xelatex \
             --toc \
-            --toc-depth=2 \
+            --toc-depth=1 \
             -V geometry:margin=1in \
             -V fontsize=11pt \
             -V monofont="DejaVu Sans Mono" \

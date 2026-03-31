@@ -6,7 +6,7 @@
 
 A practical guide to the design decisions, architectural patterns, and open challenges of giving AI agents persistent, searchable memory. Covers memory formation, evolution, cross-session safety, scoring and decay, lifecycle management, and the design boundary between memory infrastructure and memory intelligence.
 
-Based on analysis of recent research (AgeMem, A-Mem, Generative Agents, MemGPT, CoALA), production systems, and a real deployment on Kubernetes.
+Based on analysis of recent research (AgeMem, A-Mem, Generative Agents, MemGPT, CoALA), existing memory systems, and a working deployment on Kubernetes.
 
 **This is NOT** an introduction to RAG, vector databases, or embeddings. It assumes familiarity with these concepts and focuses on the design questions specific to agent memory systems.
 
@@ -25,7 +25,7 @@ Based on analysis of recent research (AgeMem, A-Mem, Generative Agents, MemGPT, 
 | 4 | Memory Formation and Evolution | Who decides what to store, and how should memories change over time? |
 | 5 | Cross-Session Memory | How to share knowledge across sessions without contamination? |
 | 6 | Scoring, Decay, and Lifecycle | How to rank memories, when to let them fade, and the unsolved lifecycle problem |
-| 7 | Designing an Infrastructure Layer | One opinionated approach: modular, pluggable, open-source |
+| 7 | Designing an Agentic Memory System | One opinionated approach: modular, pluggable, open-source |
 | 8 | Case Study | A real migration from key-value to semantic memory on Kubernetes |
 
 ## Reference Implementation

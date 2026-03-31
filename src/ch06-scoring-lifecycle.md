@@ -1,18 +1,18 @@
-# Scoring, Decay, and Lifecycle Management
+# Chapter 6: Scoring, Decay, and Memory Lifecycle
 
-A common surprise when first deploying vector search for agent memory: the results are semantically relevant but practically unhelpful. A search for "pod crashes" returns memories about pod crashes — good. But the top result is an untested observation from three months ago, while a proven fix from last week is buried at position four. Both have similar cosine scores; the difference is that one has been used successfully dozens of times and the other was never validated.
+The previous chapters addressed what to store and how to scope it across sessions. This chapter tackles what happens after memories are stored: how they are ranked during retrieval, how they age over time, and how the full lifecycle — from creation to archival — should be managed.
 
-This reveals a fundamental limitation of pure vector search for agent memory. Cosine similarity captures text relevance but not trustworthiness, freshness, or track record. The scoring function needs to reflect whether a memory is worth acting on — not just whether it's semantically related to the query.
+The central challenge is that vector similarity alone is not sufficient for ranking agent memories. Two memories can match a query equally well semantically but differ enormously in practical value. One may have been recalled dozens of times and led to successful outcomes; the other may be an untested observation from months ago. The retrieval function needs to reflect not just semantic relevance but also trustworthiness, freshness, and proven track record.
 
-- **Is this memory trustworthy?** Has it led to good outcomes when used before?
-- **Is this memory fresh?** Was it verified recently, or is it from months ago?
-- **Is this memory proven?** Recalled 50 times, or never tested?
+This chapter covers three related concerns that together form the memory quality layer:
 
-Two memories can match a query equally well semantically, but differ enormously in practical value. Scoring adds the dimensions that cosine similarity alone cannot capture.
+- **Scoring** — how to rank memories during retrieval, combining semantic similarity with usage signals
+- **Decay** — how memories should age, and which decay models fit different use cases
+- **Lifecycle management** — how memories transition through states from active to archived, and why this remains the most underserved area in the landscape
 
-## The Park et al. Scoring Function
+## Scoring: Beyond Cosine Similarity
 
-Park et al. (2023) proposed the most cited scoring function for agent memory in their Generative Agents work:
+The most widely cited scoring function for agent memory was introduced in the Generative Agents work (Park et al., 2023):
 
 ```
 Score = α × recency + β × importance + γ × relevance
@@ -109,44 +109,13 @@ None of these is satisfactory. A principled lifecycle management system should h
 
 ### Memory Lifecycle States
 
-```
-                    ┌──────────────┐
-                    │   ACTIVE     │
-                    │              │
-                    │ Full scoring │
-                    │ In results   │
-                    └──────┬───────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-              ▼            ▼            ▼
-    ┌─────────────┐ ┌────────────┐ ┌──────────┐
-    │ DEPRECATED  │ │  EXPIRED   │ │ ARCHIVED │
-    │             │ │            │ │          │
-    │ Superseded  │ │ TTL passed │ │ Cold     │
-    │ by newer    │ │ without    │ │ storage  │
-    │ memory      │ │ access     │ │          │
-    │             │ │            │ │ Batch    │
-    │ Hidden from │ │ Not in     │ │ access   │
-    │ defaults    │ │ defaults   │ │ only     │
-    └─────────────┘ └────────────┘ └──────────┘
-```
+![Memory Lifecycle States](images/lifecycle-states.svg)
 
 ### Soft TTL with Access Renewal
 
 Hard expiration (delete after N days) loses valuable information. Soft TTL with access-based renewal preserves actively-used memories while letting unused ones fade:
 
-```
-Memory created → TTL starts (configurable per type)
-    │
-    ├── Accessed within TTL → TTL resets
-    │   (memory stays active, proven value)
-    │
-    └── TTL expires without access → status moves to "expired"
-        │
-        └── After grace period → status moves to "archived"
-            (cold storage, batch access only, never deleted)
-```
+When a memory is created, its TTL clock starts. If the memory is accessed before the TTL expires, the clock resets — the memory has demonstrated ongoing value and stays active. If the TTL expires without any access, the memory's status transitions to "expired." After a grace period in the expired state, it moves to "archived" — still preserved in cold storage for batch access, but no longer returned in standard searches. At no point is the memory permanently deleted.
 
 TTL base values should vary by memory type:
 - Episodic (events): moderate TTL, decays if not recalled
@@ -200,8 +169,6 @@ The lifecycle isn't just about decay and archival. It also includes **consolidat
 This maps to what neuroscience calls hippocampal consolidation — the process that occurs during sleep, where the brain replays, strengthens, and reorganizes memories. In agent systems, this is "sleep-time compute" — processing that happens between sessions, not during them.
 
 The storage layer should expose batch APIs that support consolidation workflows. The consolidation logic itself — what to merge, how to summarize, which contradictions to resolve — is intelligence-layer work, handled by the agent, an orchestrator, or a scheduled pipeline.
-
-## Closing Thoughts
 
 ## Closing Thoughts
 

@@ -1,4 +1,4 @@
-# Five Design Questions Every Agent Memory System Must Answer
+# Chapter 3: Five Design Questions Every Memory System Must Answer
 
 Regardless of implementation, every agent memory system must navigate five fundamental design questions. These questions are independent of framework, backend, or deployment model. How you answer them defines your architecture.
 
@@ -17,7 +17,7 @@ The literature reveals a spectrum of approaches:
 | Event-driven | The orchestrator | May miss important intermediate observations |
 | RL-trained policy | Learned behavior | Requires training infrastructure; non-deterministic |
 
-Park et al. (2023) demonstrated that storing everything and filtering at retrieval is surprisingly robust — it eliminates the "forgot to store" failure mode. AgeMem (Yu et al., 2026) showed that RL-trained policies that learn when to store, update, and discard outperform hand-crafted heuristics. Both are valid — one invests in retrieval, the other invests in training.
+Research on generative agents demonstrated that storing everything and filtering at retrieval is surprisingly robust — it eliminates the "forgot to store" failure mode. More recent work on RL-trained memory policies (AgeMem, 2026) showed that learned policies that decide when to store, update, and discard can outperform hand-crafted heuristics. Both are valid — one invests in retrieval quality, the other invests in training.
 
 The infrastructure implication: the storage layer should support all trigger patterns without preferring one. The decision of when to store is an intelligence concern that sits above the storage layer.
 
@@ -52,54 +52,47 @@ The question is not whether to support cross-session memory, but how to make it 
 
 Memory and RAG are often treated as separate systems, but they exist on a spectrum:
 
-```
-Static/Human-authored ←────────────────────→ Dynamic/Agent-authored
+![RAG to Memory Spectrum](images/rag-memory-spectrum.svg)
 
-Reference docs    Curated runbooks    Session summaries    Episodic memories
-(pure RAG)        (procedural KB)     (hybrid zone)        (pure memory)
-```
+The spectrum runs from static, human-authored content (pure RAG) on the left to dynamic, agent-authored knowledge (pure memory) on the right. Most real systems operate somewhere in the middle.
 
 The fundamental differences:
 
-| | RAG | Agent Memory |
-|--|-----|-------------|
-| **Authorship** | Human-written documents | Agent-generated records |
-| **Mutability** | Read-only, updated externally | Read-write, agent manages |
+| Dimension | RAG | Agent Memory |
+|-----------|-----|-------------|
+| **Authorship** | Human-written | Agent-generated |
+| **Mutability** | Read-only, external updates | Read-write, agent manages |
 | **Purpose** | Ground in reference material | Learn from experience |
 
 But the line blurs when agents annotate runbooks with their experiences, when session summaries are stored in vector databases, or when curated documents are ingested as procedural memory.
 
 Rather than enforcing a hard boundary, a practical approach is to support both through the same retrieval interface, differentiated by metadata — who authored it (human vs agent), whether it's mutable, and how it should age.
 
-## Question 5: How Do You Score, Decay, and Manage Lifecycle?
+## Question 5: How Do You Score, Decay, and Manage Memory Lifecycle?
 
 Not all memories are equally valuable. A memory recalled 50 times that led to successful outcomes is more valuable than one stored six months ago and never accessed.
 
-Park et al. (2023) proposed the most cited scoring function: **recency × importance × relevance.** Recent work (AgeMem, 2026) has shown that RL-trained scoring policies can outperform hand-crafted formulas. The trade-off is between:
+The most widely cited scoring function combines **recency × importance × relevance** (discussed in detail in Chapter 6). More recent work has shown that RL-trained scoring policies can outperform hand-crafted formulas. The trade-off is between:
 
 - **Deterministic scoring:** Fast, cheap, explainable, reproducible. Good for infrastructure.
 - **Learned scoring:** More accurate for task-specific domains. Requires training. Non-deterministic.
 
 Beyond scoring, the full lifecycle question includes:
-- **Decay:** Should memories fade? How fast? Power law (slow, preserves old knowledge) or exponential (fast, favors recency)?
-- **Evolution:** Should memories update when new context arrives, or remain immutable?
-- **Tiering:** Should hot (recent, frequent) and cold (old, rare) memories be stored differently?
+
+- **Decay:** Should memories fade over time? How fast? Power law decay preserves old knowledge longer, while exponential decay favors recency.
+
+- **Evolution:** Should memories update when new related context arrives, or should they remain immutable once stored?
+
+- **Tiering:** Should frequently accessed, recent memories be stored differently from old, rarely accessed ones?
+
 - **Archival:** When should memories move to cheaper storage? Should they ever be permanently deleted?
 
-No existing production system handles lifecycle management comprehensively. This remains the **largest unsolved operational problem** in agent memory.
+Comprehensive lifecycle management remains one of the most underserved areas in agent memory — an area with significant room for innovation.
 
 ## How the Questions Connect
 
-These five questions form an interconnected design space:
+These five questions are not independent — they form an interconnected design space. The storage decisions (Q1, Q2) determine what's available for retrieval. The retrieval decisions (Q3, Q4, Q5) determine how stored knowledge is surfaced and aged.
 
-```
-Q1 (When to store) ──→ Q2 (What to store, how it evolves) ──→ Storage
-                                                                  │
-Q3 (Cross-session safety) ←──── Retrieval ←───────────────────────┤
-                                                                  │
-Q4 (Memory vs RAG boundary) ──→ Unified retrieval interface ──────┤
-                                                                  │
-Q5 (Scoring, decay, lifecycle) ←── Applied at retrieval + background ─┘
-```
+![How the Five Questions Connect](images/five-questions-flow.svg)
 
 Your answers to these questions will determine the architecture. The following chapters explore the design patterns that address each one.

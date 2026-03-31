@@ -1,4 +1,4 @@
-# The Memory Landscape: What Exists and What's Missing
+# Chapter 2: The Memory Landscape
 
 As of early 2026, agent memory is an active and rapidly evolving area. Multiple architectural patterns have emerged, each reflecting different design philosophies about what memory should be and how it should work. Understanding these patterns — their strengths, limitations, and underlying assumptions — is essential for making informed architectural choices.
 
@@ -8,7 +8,7 @@ Rather than surveying individual tools, this chapter examines the **patterns** t
 
 ### Pattern 1: Managed Extraction Pipeline
 
-A managed service receives raw conversation events, runs LLM-powered extraction strategies (fact extraction, preference detection, session summarization, episodic structuring), and produces searchable memory records.
+A managed service receives raw conversation events, runs LLM-powered extraction strategies (fact extraction, preference detection, session summarization, episodic structuring), and produces searchable memory records. Examples of this pattern include AWS AgentCore Memory and similar managed memory services.
 
 **Characteristics:**
 - Intelligence and storage are bundled as one service
@@ -22,7 +22,7 @@ A managed service receives raw conversation events, runs LLM-powered extraction 
 
 ### Pattern 2: Extract-Update-Search
 
-An open-source library that, when called, sends content through an LLM to extract atomic facts, compares them against existing memories for deduplication and contradiction resolution, and stores the results in a vector database.
+An open-source library that, when called, sends content through an LLM to extract atomic facts, compares them against existing memories for deduplication and contradiction resolution, and stores the results in a vector database. Mem0 is the most prominent example of this pattern, with its extract-compare-update pipeline.
 
 **Characteristics:**
 - Every write triggers LLM extraction
@@ -90,19 +90,13 @@ A-Mem (Xu et al., 2025) introduced a Zettelkasten-inspired approach where memori
 
 **Limitations:** Linking and evolution require computation on every write. Link quality depends on similarity thresholds. The network can grow complex and hard to debug.
 
-## The Intelligence-Infrastructure Spectrum
+## Beyond the Patterns
 
-These patterns exist on a spectrum:
+The six patterns above aren't discrete categories — they exist on a spectrum from "the system handles everything" to "the system handles only storage." Understanding where each pattern falls helps clarify what you're buying (or building) when you choose one:
 
-```
-More Intelligence ←──────────────────────────→ More Infrastructure
+On the intelligence-heavy end, systems like RL-trained policies (AgeMem) and extract-update pipelines (Mem0) make all memory decisions for you — the system decides what to remember, how to organize it, and when to forget. On the infrastructure-heavy end, pure storage layers handle persistence, indexing, and retrieval, while intelligence decisions are made by the agent or an external pipeline.
 
-RL-trained     Extract-update    Agent self-     Knowledge      Pure storage
-policies       pipeline          management      graph          + retrieval
-(AgeMem)       (Pattern 2)       (MemGPT)        (Pattern 4)    (Pattern 7?)
-```
-
-The left side bundles intelligence with storage — the system decides what to remember, how to organize it, and when to forget. The right side separates them — the storage layer handles persistence, indexing, and retrieval, while intelligence decisions are made by the agent or an external pipeline.
+Most of the six patterns fall somewhere between these extremes. Agent self-management (MemGPT) and knowledge graphs are in the middle — they provide structure and tooling but leave significant decisions to the agent or developer.
 
 Neither end is "correct." The choice depends on your constraints:
 
@@ -115,60 +109,45 @@ Neither end is "correct." The choice depends on your constraints:
 | Full control over data | Infrastructure layer you own |
 | Multi-agent sharing | Explicit storage with scoping mechanisms |
 
-## What's Still Unsolved
+## Open Challenges
 
-Despite the rapid progress, several fundamental problems remain open across all approaches:
+Despite rapid progress, several challenges remain across the landscape:
 
 ### Memory Lifecycle Management
 
-Every system either accumulates memories indefinitely or relies on manual cleanup. No production system implements principled lifecycle management — automatic scoring, decay, demotion, and archival based on usage patterns. This is the single largest operational gap.
+Every production system today either accumulates memories indefinitely or relies on manual cleanup. Principled lifecycle management — automatic scoring, decay, demotion, and archival based on usage patterns — is the area with the most room for improvement across the entire landscape.
 
 ### Memory Evolution
 
-Most systems treat memories as immutable after creation. A-Mem (Xu et al., 2025) demonstrated that memories should be living documents — updated, enriched, and relinked as new context arrives. This concept is not yet widely implemented.
+Most systems treat memories as immutable after creation. A-Mem (Xu et al., 2025) demonstrated that memories can be living documents — updated, enriched, and relinked as new context arrives. This is a promising direction but not yet widely adopted.
 
 ### Unified Short-Term and Long-Term Management
 
-AgeMem (Yu et al., 2026) showed that managing STM and LTM independently is suboptimal — what you keep in context affects what you need from long-term memory, and vice versa. Most production systems still treat these as separate concerns handled by different tools.
+AgeMem (Yu et al., 2026) showed that managing STM and LTM independently is suboptimal — what you keep in context affects what you need from long-term memory, and vice versa. Most systems still treat these as separate concerns. Unified management is an active research area moving toward practical implementations.
 
 ### Cross-Framework Memory Portability
 
-Agent memory systems are typically locked to their framework. Memory accumulated in one framework cannot be used in another. A framework-agnostic memory layer that works across LangGraph, CrewAI, Google ADK, and others remains an open gap.
+Agent memory systems are typically locked to their framework. Memory accumulated in one framework cannot be easily used in another. A framework-agnostic memory layer that works across different agent frameworks remains an open opportunity.
 
-### Cost and Latency at Scale
+### Cost and Latency Trade-offs
 
-Systems that use LLMs for extraction, deduplication, and scoring add latency and cost to every memory operation. At scale (millions of memories, thousands of daily operations), this becomes a significant engineering constraint. Deterministic alternatives trade accuracy for scalability — the optimal balance is not yet established.
+Systems that use LLMs for extraction, deduplication, and scoring add latency and cost to every memory operation. As agent deployments scale, this trade-off between intelligence quality and operational efficiency becomes a significant architectural decision. Deterministic alternatives offer speed and predictability at the expense of some semantic understanding.
 
 ## Design Space Summary
 
 When designing an agent memory system, you're navigating this design space:
 
-```
-What triggers storage?
-  └─ Everything (Park et al.) vs Agent-initiated (MemGPT) vs RL-trained (AgeMem)
+| Design Dimension | Range of Options |
+|-----------------|-----------------|
+| **What triggers storage?** | Store everything, agent-initiated, event-driven, RL-trained policy |
+| **What gets stored?** | Raw events, extracted facts, structured notes, graph triples |
+| **How are memories organized?** | Flat vector store, namespaced hierarchy, interconnected network, graph |
+| **How are memories found?** | Cosine similarity, hybrid search, graph traversal, learned retrieval |
+| **How do memories age?** | Never expire, hard TTL, soft decay, learned discard |
+| **How do memories evolve?** | Immutable, supersession, full evolution, learned update |
+| **Who manages memory?** | The agent, the orchestrator, a managed service, a trained policy |
+| **How is storage architected?** | Single backend, multi-backend composition |
 
-What gets stored?
-  └─ Raw events vs Extracted facts vs Structured notes vs Graph triples
-
-How are memories organized?
-  └─ Flat vector store vs Namespaced hierarchy vs Interconnected network vs Graph
-
-How are memories found?
-  └─ Cosine similarity vs Hybrid search vs Graph traversal vs RL-learned retrieval
-
-How do memories age?
-  └─ Never expire vs Hard TTL vs Soft decay vs RL-learned discard
-
-How do memories evolve?
-  └─ Immutable vs Supersession vs A-Mem evolution vs RL-learned update
-
-Who manages memory?
-  └─ The agent vs The orchestrator vs A managed service vs RL-trained policy
-
-How is storage architected?
-  └─ Single backend vs Multi-backend composition (key-value + search engine)
-```
-
-One dimension that deserves special attention is **storage architecture.** Most systems use a single backend for all memory operations. But production deployments increasingly reveal that different access patterns — fast session lookups, semantic similarity search, analytics — are best served by different storage engines working together. The multi-backend composition pattern (a fast key-value store as the source of truth, with a search engine as a derived semantic index) is emerging as a best practice for production-scale agent memory. Chapter 7 explores this in detail.
+One dimension that deserves special attention is storage architecture. Most systems use a single backend for all memory operations, but as deployments scale, different access patterns — fast session lookups, semantic similarity search, analytics — are often best served by different storage engines working together. Chapter 7 explores multi-backend composition in detail.
 
 The chapters that follow explore each of these design dimensions in depth, examining the trade-offs and patterns that inform good architectural choices.

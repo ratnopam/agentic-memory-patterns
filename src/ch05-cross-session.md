@@ -1,4 +1,4 @@
-# Cross-Session Memory Without Contamination
+# Chapter 5: Cross-Session Memory Without Contamination
 
 There's a moment of genuine excitement the first time an agent recalls a memory from a previous session and uses it to resolve an incident faster. That excitement fades quickly the first time the agent recalls a six-month-old configuration that has since been changed, applies the outdated fix, and makes things worse. Cross-session memory is a double-edged sword.
 
@@ -24,15 +24,9 @@ At one extreme, every session is fully isolated — no cross-session memory at a
 
 The practical middle ground: **session isolation by default, with explicit mechanisms for promoting validated knowledge to shared spaces.**
 
-```
-Per-session ←─────────────────────────→ Fully shared
+![The Isolation-Sharing Spectrum](images/isolation-spectrum.svg)
 
-Session-scoped    Namespace-scoped    Domain knowledge    Global
-memory only       sharing             base                sharing
-(safe, no learn)  (controlled)        (curated)           (risky)
-```
-
-Most production systems start on the left and carefully move rightward as they gain confidence in their curation mechanisms.
+Most systems start on the left — safe, fully isolated, no cross-session contamination — and carefully move rightward as they gain confidence in their curation and validation mechanisms. The goal is to find the position on this spectrum that maximizes learning while keeping contamination risk within acceptable bounds for the use case.
 
 ## Scoping Patterns
 
@@ -71,28 +65,11 @@ Memories carry metadata tags (tenant_id, project_id, access_level), and retrieva
 
 ## The Knowledge Building Pipeline
 
-Rather than allowing raw cross-session memory access, an effective pattern interposes a **processing layer** between session memories and shared knowledge:
+Rather than allowing raw cross-session memory access, an effective pattern interposes a **processing layer** between session memories and shared knowledge. The diagram below illustrates the flow: individual agent sessions write to isolated, session-scoped storage. A processing layer — running after each session or on a schedule — extracts reusable knowledge, validates its accuracy, and deduplicates it against the existing domain knowledge base. Only validated, curated knowledge enters the shared namespaces that future sessions can search.
 
-```
-Session ends
-    │
-    ▼
-Raw session memories (private, per-session namespace)
-    │
-    │  Processing layer (runs post-session or on schedule)
-    │  ├─ Extracts reusable knowledge
-    │  ├─ Deduplicates against existing shared knowledge
-    │  ├─ Validates accuracy (LLM, rules, or human review)
-    │  └─ Assigns to appropriate domain namespace
-    │
-    ▼
-Domain knowledge base (shared namespace, cross-agent)
-    │
-    ▼
-Future sessions search shared knowledge
-```
+![Knowledge Building Pipeline](images/knowledge-pipeline.svg)
 
-**The processing layer sits above the storage infrastructure.** It reads raw session memories, applies intelligence (extraction, validation, deduplication), and writes curated knowledge back to a shared space. This separation means:
+**The processing layer sits above the storage infrastructure.** It reads raw session memories, applies intelligence (extraction, validation, deduplication), and writes curated knowledge back to shared domain namespaces. This separation means:
 
 - Session isolation is maintained by default
 - Only validated knowledge enters shared namespaces
@@ -111,7 +88,9 @@ The simplest approach. New information overwrites old. Easy to implement but los
 
 ### Supersession
 
-New memory explicitly marks the old one as deprecated:
+New memory explicitly marks the old one as deprecated. Both versions are preserved, but only the current version surfaces in default search results:
+
+![Supersession Pattern](images/supersession.svg)
 
 ```
 New memory: "max_connections should be 200"
@@ -133,31 +112,22 @@ Supersession is the right starting point for most systems. It handles the most c
 
 ## Lifecycle States
 
-Memories should move through defined states, not just exist or not exist:
+Memories should move through defined states rather than simply existing or not existing:
 
-```
-ACTIVE ──→ DEPRECATED ──→ EXPIRED ──→ ARCHIVED
-  │              │
-  │              └── superseded by newer memory
-  │
-  └── TTL passed without access renewal
-```
+![Memory Lifecycle States](images/lifecycle-states.svg)
 
-- **Active:** Appears in search results with full scoring
-- **Deprecated:** Superseded by newer information. Hidden from default results but preserved for history.
-- **Expired:** TTL passed without being accessed. Not returned by default. Available for audit.
-- **Archived:** Moved to cold storage. Batch access only.
+Each state has distinct retrieval behavior. **Active** memories appear in search results with full scoring. **Deprecated** memories have been superseded by newer information — they are hidden from default results but preserved for historical reference. **Expired** memories have passed their TTL without being accessed — they are not returned by default but remain available for audit queries. **Archived** memories have been moved to cold storage and are accessible only through batch operations.
 
 The transition logic is infrastructure — deterministic rules based on TTL, access patterns, and explicit supersession. The decision to supersede is intelligence — made by the agent, the orchestrator, or a processing pipeline.
 
-## Key Takeaways
+## Bringing It Together
 
-1. **Default to session isolation.** Per-session memory is safe. Cross-session knowledge should flow through an explicit promotion mechanism — not be universally accessible by default.
+The safest starting point for any memory system is session isolation. Memories created during a session remain scoped to that session by default. Cross-session knowledge sharing should require an explicit promotion step — whether that's a background processing pipeline, a human review, or a set of automated rules. Making everything shared by default is a recipe for contamination.
 
-2. **The knowledge building pipeline** is an effective pattern for safe cross-session sharing. Session memories are private. A processing layer extracts, validates, and promotes reusable knowledge to shared namespaces.
+The knowledge building pipeline pattern offers a structured way to achieve safe cross-session sharing. Session memories remain private. A processing layer — running post-session or on a schedule — extracts reusable knowledge, validates it, and promotes it to shared namespaces. This keeps the contamination risks contained while still enabling agents to learn from accumulated experience.
 
-3. **Support supersession** for contradiction handling. New memories should be able to mark old ones as deprecated, preserving history while preventing stale information from surfacing.
+For handling contradictions, supersession provides a practical middle ground between ignoring the problem and implementing full temporal validity tracking. When new information contradicts old information, the new memory explicitly marks the old one as deprecated. Both versions are preserved, but only the current version surfaces in default search results.
 
-4. **Implement lifecycle states** as infrastructure. Active, deprecated, expired, archived — each with different retrieval behavior. The storage layer manages transitions; the intelligence layer decides when to trigger them.
+Lifecycle states — active, deprecated, expired, archived — give the storage layer a vocabulary for managing memories over time. The transition logic (when to expire, when to archive) is deterministic and infrastructure-level. The decision to supersede one memory with another is an intelligence-level concern, handled by the agent or an orchestration layer above.
 
-5. **Never hard-delete memories.** Storage is inexpensive. Lost information is irreplaceable. Even "wrong" memories have audit value. Soft-delete to archived, not permanent deletion.
+One principle worth holding firmly: never permanently delete memories. Storage costs are low and trending lower. The value of information that initially seems useless but later proves critical for diagnosing a recurring issue is difficult to predict. Soft deletion — moving memories to an archived state rather than destroying them — preserves optionality at minimal cost.

@@ -8,13 +8,13 @@ The natural next step was to look for a memory solution. What emerged was a frag
 
 This book is what I wish existed when I started thinking through the problem.
 
-## What This Book Is
+### What This Book Is
 
 This is a book about thinking through agent memory before building it. The design space is larger than it first appears, and the choices you make early — what to store, how to score, whether memories evolve — cascade through the entire system.
 
-This book doesn't prescribe a single "best" approach. After surveying the research, exploring multiple implementation paths, and deploying a working system in production, the honest conclusion is that the right architecture depends heavily on your constraints. What this book offers is a framework for thinking about those constraints clearly — the questions to ask, the patterns that have emerged, and the trade-offs that aren't obvious until you're deep in the design.
+This book doesn't prescribe a single "best" approach. After studying the recent memory trends and research artifacts, exploring multiple implementation paths, and deploying a working agent memory architecture, it's best to say that the right architecture depends heavily on your constraints. What this book offers is a framework for thinking about those constraints clearly — the questions to ask, the patterns that have emerged, and the trade-offs that aren't obvious until you're deep in the design.
 
-## What This Book Does NOT Cover
+### What This Book Does NOT Cover
 
 This book assumes you understand:
 - **Retrieval-Augmented Generation (RAG)** — fetching relevant documents to ground LLM responses
@@ -24,34 +24,17 @@ This book assumes you understand:
 
 If you're building agents and wondering "how should I think about memory?" — this book is for you. If you're wondering "what is an agent?" — start with the foundational resources listed in the References chapter.
 
-## The Central Observation
+### The Central Observation
 
 The agent memory landscape today conflates two distinct concerns:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  INTELLIGENCE                                            │
-│  How memories are created, curated, and evolved          │
-│                                                          │
-│  LLM-powered extraction, summarization, consolidation,  │
-│  reinforcement learning, self-editing memory blocks      │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────┐
-│  INFRASTRUCTURE                                          │
-│  Where memories live, how they're found, how they age    │
-│                                                          │
-│  Storage backends, indexing, retrieval, scoring,          │
-│  lifecycle management, multi-agent sharing               │
-└─────────────────────────────────────────────────────────┘
-```
+![Intelligence and Infrastructure Layers](images/intro-layers.svg)
 
 Most solutions bundle these layers together. This coupling means choosing an intelligence approach (how memories are extracted) also locks you into a storage approach (where they're kept), a deployment model (where it runs), and a framework (what agents can use it).
 
 This book argues that understanding the boundary between these layers — and designing for it — is essential for building memory systems that are modular, portable, and long-lived. But it also acknowledges that the most effective systems, as recent research demonstrates, find intelligent ways to bridge these layers rather than treating them as entirely independent.
 
-## How This Book Is Organized
+### How This Book Is Organized
 
 | Chapter | Focus |
 |---------|-------|
@@ -61,7 +44,7 @@ This book argues that understanding the boundary between these layers — and de
 | **4. Memory Formation and Evolution** | When to store, what makes something worth keeping, and how memories change over time |
 | **5. Cross-Session Memory** | Session isolation, contamination risks, and knowledge building patterns |
 | **6. Scoring, Decay, and Lifecycle** | How to rank memories, when to let them fade, and managing the full lifecycle |
-| **7. Designing a Memory Infrastructure Layer** | One opinionated approach: modular, pluggable, open-source |
+| **7. Designing an Agentic Memory System** | One opinionated approach: modular, pluggable, open-source |
 | **8. Case Study** | A real migration from key-value storage to semantic memory on Kubernetes |
 
 Chapters 1-2 set the context. Chapters 3-6 are the core — the design questions and patterns that apply regardless of implementation. Chapters 7-8 show one way to implement them, with specific engineering choices and trade-offs made explicit.

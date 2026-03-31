@@ -4,14 +4,14 @@
 
 ---
 
-- [Why Context Windows Are Not Memory](./ch01-context-is-not-memory.md)
-- [The Memory Landscape: What Exists and What's Missing](./ch02-landscape.md)
-- [Five Design Questions Every Agent Memory System Must Answer](./ch03-five-questions.md)
-- [Memory Formation and Evolution](./ch04-memory-formation.md)
-- [Cross-Session Memory Without Contamination](./ch05-cross-session.md)
-- [Scoring, Decay, and Lifecycle Management](./ch06-scoring-lifecycle.md)
-- [Designing a Memory Infrastructure Layer](./ch07-infrastructure-design.md)
-- [Case Study: From Key-Value to Semantic Memory on Kubernetes](./ch08-case-study.md)
+- [Chapter 1: Why Context Windows Are Not Memory](./ch01-context-is-not-memory.md)
+- [Chapter 2: The Memory Landscape](./ch02-landscape.md)
+- [Chapter 3: Five Design Questions Every Memory System Must Answer](./ch03-five-questions.md)
+- [Chapter 4: Memory Formation and Evolution](./ch04-memory-formation.md)
+- [Chapter 5: Cross-Session Memory Without Contamination](./ch05-cross-session.md)
+- [Chapter 6: Scoring, Decay, and Memory Lifecycle](./ch06-scoring-lifecycle.md)
+- [Chapter 7: Designing an Agentic Memory System](./ch07-infrastructure-design.md)
+- [Chapter 8: From Key-Value to Semantic Memory on Kubernetes](./ch08-case-study.md)
 
 ---
 
