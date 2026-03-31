@@ -11,7 +11,6 @@
 - [Chapter 5: Cross-Session Memory Without Contamination](./ch05-cross-session.md)
 - [Chapter 6: Scoring, Decay, and Memory Lifecycle](./ch06-scoring-lifecycle.md)
 - [Chapter 7: Designing an Agentic Memory System](./ch07-infrastructure-design.md)
-- [Chapter 8: From Key-Value to Semantic Memory on Kubernetes](./ch08-case-study.md)
 
 ---
 

@@ -26,7 +26,6 @@ Based on analysis of recent research (AgeMem, A-Mem, Generative Agents, MemGPT, 
 | 5 | Cross-Session Memory | How to share knowledge across sessions without contamination? |
 | 6 | Scoring, Decay, and Lifecycle | How to rank memories, when to let them fade, and the unsolved lifecycle problem |
 | 7 | Designing an Agentic Memory System | One opinionated approach: modular, pluggable, open-source |
-| 8 | Case Study | A real migration from key-value to semantic memory on Kubernetes |
 
 ## Reference Implementation
 

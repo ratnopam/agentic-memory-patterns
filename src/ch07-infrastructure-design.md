@@ -137,4 +137,4 @@ The architecture described in this chapter is one coherent answer to the design 
 
 Different priorities would lead to different architectures. A team optimizing for task performance above all else might choose AgeMem's RL-trained approach. A team building a knowledge-intensive application might choose a graph-based approach like Graphiti. The value of this chapter is not in prescribing the answer but in making the design decisions and their consequences explicit.
 
-The next chapter illustrates what happens when these design decisions meet a real deployment.
+A reference implementation based on these design principles, along with a case study of deploying it on Kubernetes, will be made available as a companion to this book.

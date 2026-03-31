@@ -45,6 +45,5 @@ This book argues that understanding the boundary between these layers — and de
 | **5. Cross-Session Memory** | Session isolation, contamination risks, and knowledge building patterns |
 | **6. Scoring, Decay, and Lifecycle** | How to rank memories, when to let them fade, and managing the full lifecycle |
 | **7. Designing an Agentic Memory System** | One opinionated approach: modular, pluggable, open-source |
-| **8. Case Study** | A real migration from key-value storage to semantic memory on Kubernetes |
 
-Chapters 1-2 set the context. Chapters 3-6 are the core — the design questions and patterns that apply regardless of implementation. Chapters 7-8 show one way to implement them, with specific engineering choices and trade-offs made explicit.
+Chapters 1-2 set the context. Chapters 3-6 are the core — the design questions and patterns that apply regardless of implementation. Chapter 7 shows one way to put them together, with specific architectural choices and trade-offs made explicit.

@@ -39,8 +39,6 @@ jobs:
             echo "$BREAK"
             cat src/ch07-infrastructure-design.md
             echo "$BREAK"
-            cat src/ch08-case-study.md
-            echo "$BREAK"
             cat src/references.md
           } > full-book.md
           # Fix image paths for pandoc (relative to repo root)
