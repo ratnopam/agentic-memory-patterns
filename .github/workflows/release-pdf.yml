@@ -43,7 +43,7 @@ jobs:
             echo "$BREAK"
             cat src/references.md
           } > full-book.md
-          # Fix image paths (src/images/ -> src/images/ relative to repo root)
+          # Fix image paths for pandoc (relative to repo root)
           sed -i 's|images/|src/images/|g' full-book.md
 
       - name: Build PDF

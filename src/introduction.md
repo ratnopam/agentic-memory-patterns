@@ -28,7 +28,7 @@ If you're building agents and wondering "how should I think about memory?" — t
 
 The agent memory landscape today conflates two distinct concerns:
 
-![Intelligence and Infrastructure Layers](images/intro-layers.svg)
+![Intelligence and Infrastructure Layers](images/intro-layers.png)
 
 Most solutions bundle these layers together. This coupling means choosing an intelligence approach (how memories are extracted) also locks you into a storage approach (where they're kept), a deployment model (where it runs), and a framework (what agents can use it).
 

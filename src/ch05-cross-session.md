@@ -24,7 +24,7 @@ At one extreme, every session is fully isolated — no cross-session memory at a
 
 The practical middle ground: **session isolation by default, with explicit mechanisms for promoting validated knowledge to shared spaces.**
 
-![The Isolation-Sharing Spectrum](images/isolation-spectrum.svg)
+![The Isolation-Sharing Spectrum](images/isolation-spectrum.png)
 
 Most systems start on the left — safe, fully isolated, no cross-session contamination — and carefully move rightward as they gain confidence in their curation and validation mechanisms. The goal is to find the position on this spectrum that maximizes learning while keeping contamination risk within acceptable bounds for the use case.
 
@@ -67,7 +67,7 @@ Memories carry metadata tags (tenant_id, project_id, access_level), and retrieva
 
 Rather than allowing raw cross-session memory access, an effective pattern interposes a **processing layer** between session memories and shared knowledge. The diagram below illustrates the flow: individual agent sessions write to isolated, session-scoped storage. A processing layer — running after each session or on a schedule — extracts reusable knowledge, validates its accuracy, and deduplicates it against the existing domain knowledge base. Only validated, curated knowledge enters the shared namespaces that future sessions can search.
 
-![Knowledge Building Pipeline](images/knowledge-pipeline.svg)
+![Knowledge Building Pipeline](images/knowledge-pipeline.png)
 
 **The processing layer sits above the storage infrastructure.** It reads raw session memories, applies intelligence (extraction, validation, deduplication), and writes curated knowledge back to shared domain namespaces. This separation means:
 
@@ -90,7 +90,7 @@ The simplest approach. New information overwrites old. Easy to implement but los
 
 New memory explicitly marks the old one as deprecated. Both versions are preserved, but only the current version surfaces in default search results:
 
-![Supersession Pattern](images/supersession.svg)
+![Supersession Pattern](images/supersession.png)
 
 ```
 New memory: "max_connections should be 200"
@@ -114,7 +114,7 @@ Supersession is the right starting point for most systems. It handles the most c
 
 Memories should move through defined states rather than simply existing or not existing:
 
-![Memory Lifecycle States](images/lifecycle-states.svg)
+![Memory Lifecycle States](images/lifecycle-states.png)
 
 Each state has distinct retrieval behavior. **Active** memories appear in search results with full scoring. **Deprecated** memories have been superseded by newer information — they are hidden from default results but preserved for historical reference. **Expired** memories have passed their TTL without being accessed — they are not returned by default but remain available for audit queries. **Archived** memories have been moved to cold storage and are accessible only through batch operations.
 

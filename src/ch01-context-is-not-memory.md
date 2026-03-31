@@ -51,7 +51,7 @@ These are structured data fields that belong in a database with typed records, i
 
 Human cognition operates with a memory hierarchy. Agent systems are converging on a similar structure:
 
-![Memory Hierarchy](images/memory-hierarchy.svg)
+![Memory Hierarchy](images/memory-hierarchy.png)
 
 Recent work like Titans (Behrouz et al., 2024) explores building long-term memory into the neural architecture itself — a neural memory module that learns to memorize historical context as part of the model's forward pass. This is a form of **parametric long-term memory** — implicit, learned, and embedded in model weights.
 

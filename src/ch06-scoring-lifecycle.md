@@ -109,7 +109,7 @@ None of these is satisfactory. A principled lifecycle management system should h
 
 ### Memory Lifecycle States
 
-![Memory Lifecycle States](images/lifecycle-states.svg)
+![Memory Lifecycle States](images/lifecycle-states.png)
 
 ### Soft TTL with Access Renewal
 

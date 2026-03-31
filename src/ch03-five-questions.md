@@ -52,7 +52,7 @@ The question is not whether to support cross-session memory, but how to make it 
 
 Memory and RAG are often treated as separate systems, but they exist on a spectrum:
 
-![RAG to Memory Spectrum](images/rag-memory-spectrum.svg)
+![RAG to Memory Spectrum](images/rag-memory-spectrum.png)
 
 The spectrum runs from static, human-authored content (pure RAG) on the left to dynamic, agent-authored knowledge (pure memory) on the right. Most real systems operate somewhere in the middle.
 
@@ -93,6 +93,6 @@ Comprehensive lifecycle management remains one of the most underserved areas in 
 
 These five questions are not independent — they form an interconnected design space. The storage decisions (Q1, Q2) determine what's available for retrieval. The retrieval decisions (Q3, Q4, Q5) determine how stored knowledge is surfaced and aged.
 
-![How the Five Questions Connect](images/five-questions-flow.svg)
+![How the Five Questions Connect](images/five-questions-flow.png)
 
 Your answers to these questions will determine the architecture. The following chapters explore the design patterns that address each one.

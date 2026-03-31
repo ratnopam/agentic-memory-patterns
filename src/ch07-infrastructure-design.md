@@ -69,7 +69,7 @@ Adding a new backend means implementing the interface and registering it. No cha
 
 For systems that outgrow a single backend, the architecture should support composition — routing different access patterns to different storage engines through configuration:
 
-![Multi-Backend Composition Pattern](images/composition-pattern.svg)
+![Multi-Backend Composition Pattern](images/composition-pattern.png)
 
 The primary store (typically a fast key-value or relational database) serves as the source of truth for all writes and exact lookups. A background process extracts insights, generates embeddings, and populates a search index (typically a vector database or search engine) for semantic retrieval. The agent's API is unchanged — the routing happens inside the infrastructure layer.
 
