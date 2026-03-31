@@ -58,7 +58,9 @@ jobs:
             -V title="Agent Memory Patterns" \
             -V subtitle="Architecture and Design for Persistent AI Agent Memory" \
             -V author="Ratnopam Chakrabarti" \
-            -V date="$(date +'%B %Y')"
+            -V date="$(date +'%B %Y')" \
+            -H <(echo '\usepackage{float}') \
+            -H <(echo '\floatplacement{figure}{H}')
 
       - name: Create or update release
         uses: softprops/action-gh-release@v2
