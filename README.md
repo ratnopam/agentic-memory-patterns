@@ -10,7 +10,7 @@ This book assumes familiarity with RAG, vector databases, and LLM agent architec
 
 ## Download
 
-**[Download PDF](https://github.com/ratnopam/agent-memory-patterns/releases)** (latest release)
+**[Download PDF](https://github.com/ratnopam/agent-memory-patterns/releases/latest)** — generated automatically from the latest tagged release.
 
 ## Chapters
 
