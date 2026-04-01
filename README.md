@@ -10,7 +10,7 @@ This book assumes familiarity with RAG, vector databases, and LLM agent architec
 
 ## Download
 
-**[Download PDF](https://github.com/ratnopam/agent-memory-patterns/releases/latest)** — generated automatically from the latest tagged release.
+**[Download PDF](https://github.com/ratnopam/agentic-memory-patterns/releases/latest)** — generated automatically from the latest tagged release.
 
 ## Chapters
 
@@ -34,4 +34,4 @@ Ratnopam Chakrabarti
 
 ## Feedback
 
-Open an [issue](https://github.com/ratnopam/agent-memory-patterns/issues) for corrections, suggestions, or discussion.
+Open an [issue](https://github.com/ratnopam/agentic-memory-patterns/issues) for corrections, suggestions, or discussion.
