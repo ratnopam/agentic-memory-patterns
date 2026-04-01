@@ -4,6 +4,20 @@ Regardless of implementation, every agent memory system must navigate five funda
 
 This chapter introduces the questions. Chapters 4-6 explore the patterns that address them.
 
+## A Note on Agent Types
+
+Before diving into the questions, it is worth acknowledging that different types of agents have different memory requirements. The five questions apply universally, but the answers may vary significantly depending on the agent's role.
+
+**Operations and SRE agents** primarily need episodic memory (past incidents, resolutions, and their outcomes) and procedural memory (runbooks, troubleshooting workflows). Their memories are tied to infrastructure — clusters, services, environments — and temporal context is critical. "What happened the last time this service crashed?" is the defining query.
+
+**Code and development agents** (such as Cursor, Claude Code, or Devin) need a different memory profile. They benefit from semantic memory about codebase conventions, architectural decisions, and user preferences. Their memory is tied to projects and repositories, and consistency matters more than temporal context. "This codebase uses tabs, not spaces" is knowledge that should persist indefinitely.
+
+**Conversational and customer-facing agents** prioritize user profile memory — preferences, history, relationship context. Their memory is scoped per user, and privacy is a primary concern. Cross-user memory sharing is typically inappropriate.
+
+**Research and analysis agents** need the broadest memory — accumulating findings across many sessions, building up domain knowledge over time, and connecting insights from different sources. Their memory most closely resembles a personal knowledge base.
+
+The five questions that follow apply to all of these agent types. The design space is the same; the optimal position within it differs based on the agent's role, domain, and operational constraints.
+
 ## Question 1: When Should an Agent Store to Memory?
 
 This seems simple — "store when you learn something useful." But the trigger decision has profound implications for memory quality, completeness, and cost.
@@ -64,9 +78,9 @@ The fundamental differences:
 | **Mutability** | Read-only, external updates | Read-write, agent manages |
 | **Purpose** | Ground in reference material | Learn from experience |
 
-But the line blurs when agents annotate runbooks with their experiences, when session summaries are stored in vector databases, or when curated documents are ingested as procedural memory.
+But the line blurs in practice. Agents annotate runbooks with their experiences. Session summaries get stored in vector databases. Curated documents from wikis and Confluence spaces are ingested as procedural memory. Many organizations already have substantial knowledge bases — operational runbooks, architecture documents, troubleshooting guides — that represent a form of procedural and semantic memory authored by humans rather than agents.
 
-Rather than enforcing a hard boundary, a practical approach is to support both through the same retrieval interface, differentiated by metadata — who authored it (human vs agent), whether it's mutable, and how it should age.
+The practical approach is not to enforce a hard boundary but to support both through the same retrieval interface, differentiated by metadata: who authored it (human vs agent), whether it's mutable, and how it should age. An agent searching for "how to handle OOM kills" should find both the official runbook (human-authored, static) and relevant past incident records (agent-authored, dynamic) — ranked by the same scoring function, returned in the same result set. The source metadata lets the agent weigh them differently if needed.
 
 ## Question 5: How Do You Score, Decay, and Manage Memory Lifecycle?
 

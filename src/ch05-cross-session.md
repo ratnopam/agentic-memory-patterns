@@ -78,6 +78,34 @@ Rather than allowing raw cross-session memory access, an effective pattern inter
 
 This is also the pattern described as "sleep-time compute" in recent research — processing that happens between sessions to consolidate and organize knowledge, analogous to the hippocampal consolidation that occurs during human sleep.
 
+## Multi-Agent Memory Patterns
+
+The cross-session challenge becomes more complex when multiple agents share a memory substrate. In multi-agent systems — increasingly common with platforms like kagent, multi-agent orchestrators, and the A2A (Agent-to-Agent) protocol — agents need to share knowledge without stepping on each other's memories.
+
+Three patterns have emerged for organizing multi-agent memory:
+
+### Shared Namespace with Conventions
+
+All agents read and write to the same memory store, organized by namespace conventions. An operations agent writes to `/incidents/`, a monitoring agent writes to `/alerts/`, and both can search each other's namespaces. This is simple to implement — it's just namespace discipline — but relies on conventions rather than enforcement. Any agent can read or write any namespace.
+
+This pattern works well for trusted, single-team deployments where all agents are designed and managed together. It breaks down in multi-tenant or multi-team environments where isolation must be enforced.
+
+### Modular Procedural Memory
+
+LEGOMem (Han et al., 2025) explored a pattern where procedural knowledge is broken into modular, composable units that can be shared across agents. Rather than each agent maintaining its own copy of "how to restart a service," a shared procedural memory module holds the canonical procedure, and agents reference it. When the procedure is updated, all agents benefit immediately.
+
+This pattern is particularly valuable for multi-agent workflows where agents have different specializations but need to execute common procedures — for example, a diagnosis agent that identifies the problem and a remediation agent that applies the fix both need access to the same runbooks.
+
+### Scoped Contribution with Validation
+
+A more controlled pattern: each agent writes to its own private namespace. A validation layer (automated or human-supervised) reviews agent-contributed memories before promoting them to shared namespaces. This prevents one agent's errors or hallucinations from polluting the shared knowledge base.
+
+This maps directly to the knowledge building pipeline discussed earlier in this chapter — the processing layer can include cross-agent validation as one of its steps.
+
+### The Core Challenge
+
+The fundamental tension in multi-agent memory is between **collective learning** (agents benefit from each other's experiences) and **isolation** (one agent's mistakes shouldn't degrade another agent's performance). The namespace model provides a flexible foundation for navigating this tension — strict isolation by default, with controlled sharing through explicit mechanisms. The right balance depends on the trust level between agents and the consequences of cross-contamination.
+
 ## Handling Contradictions
 
 When new information contradicts existing memories, the system needs a resolution strategy:

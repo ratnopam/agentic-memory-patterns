@@ -25,6 +25,8 @@ Each component normalized to [0, 1]:
 
 This function established the principle that retrieval should consider multiple signals, not just text similarity. Most subsequent work has built on or responded to this foundation.
 
+To see why multiple signals matter, consider a concrete scenario. An agent searches for "pod OOM kills" and two memories match with identical cosine similarity of 0.85. Memory A was stored six months ago and has never been recalled. Memory B was stored two weeks ago, has been recalled fifteen times, and led to successful outcomes in twelve of those cases. With cosine similarity alone, both rank equally. With a multi-signal scoring function that incorporates recency, access frequency, and success rate, Memory B ranks substantially higher — reflecting the practical reality that it is a more trustworthy and proven piece of knowledge.
+
 ## Deterministic vs Learned Scoring
 
 A fundamental design trade-off has emerged between two approaches to scoring:
@@ -98,6 +100,20 @@ Use exponential only for explicitly short-lived data — active deployment state
 
 The choice should be configurable, not hardcoded. Different namespaces or record types may warrant different decay characteristics — operational state decays fast, domain knowledge decays slowly, procedures may not decay at all.
 
+## The Feedback Loop: Memory Confidence Through Real-World Outcomes
+
+Scoring and decay address how memories age passively. But there is an active dimension that is equally important: **reconciling memory with real-world feedback.**
+
+When an agent recalls a memory and acts on it, the real world provides a signal — did the action succeed or fail? This signal should flow back into the memory's confidence score, creating a feedback loop:
+
+![The Memory Feedback Loop](images/feedback-loop.png)
+
+This is the mechanism by which agent memory becomes a **learning system** rather than just a storage system. Without the feedback loop, memory is static — it records what happened but doesn't learn which memories are actually useful. With the feedback loop, frequently helpful memories rise in ranking while memories that led to poor outcomes gradually lose influence.
+
+The feedback loop also provides a natural defense against the contamination problem discussed in Chapter 5. A stale or incorrect memory that is recalled and leads to a failure will have its confidence reduced. Over time, bad memories don't need to be explicitly identified and removed — they are naturally demoted by their track record.
+
+The infrastructure implication is straightforward: the storage layer needs to track success and failure counts per memory, and the scoring function needs to incorporate the resulting success rate. The decision of when to record an outcome — and what constitutes success or failure — is an intelligence-layer concern, determined by the agent or the orchestrator based on the task's objectives.
+
 ## Lifecycle Management: The Unsolved Problem
 
 Beyond scoring and decay, the full lifecycle question is the **largest unsolved problem** in agent memory. Every production system today either:
@@ -169,6 +185,40 @@ The lifecycle isn't just about decay and archival. It also includes **consolidat
 This maps to what neuroscience calls hippocampal consolidation — the process that occurs during sleep, where the brain replays, strengthens, and reorganizes memories. In agent systems, this is "sleep-time compute" — processing that happens between sessions, not during them.
 
 The storage layer should expose batch APIs that support consolidation workflows. The consolidation logic itself — what to merge, how to summarize, which contradictions to resolve — is intelligence-layer work, handled by the agent, an orchestrator, or a scheduled pipeline.
+
+## Evaluating Memory Quality
+
+A question that every memory implementation must eventually face: how do you know it's actually helping? Building the system is one challenge; knowing whether it improves agent performance is another.
+
+### Measuring Retrieval Quality
+
+The most direct measure is whether the right memories surface at the right time. This can be evaluated at several levels:
+
+**Relevance:** When the agent searches memory, do the results actually relate to the situation at hand? This is the baseline — if retrieval returns irrelevant memories, the rest of the system doesn't matter. Relevance can be measured by sampling search queries and judging whether the top results are meaningful, either through human review or by tracking whether the agent actually uses the recalled memories in its response.
+
+**Precision vs recall trade-off:** Returning too many memories dilutes context. Returning too few misses important knowledge. The `top_k` parameter and the scoring weights together control this balance. Monitoring the ratio of recalled memories that the agent actually references in its output provides a practical signal.
+
+**Staleness rate:** What percentage of recalled memories contain outdated information? This can be measured by tracking the age of recalled memories relative to the last known update in the domain. A high staleness rate indicates that decay and lifecycle policies need tuning.
+
+### Measuring Agent Performance Impact
+
+The ultimate question is whether memory makes the agent better at its job. This requires comparing agent performance with and without memory:
+
+**Task completion efficiency:** Does the agent complete tasks faster (fewer tool calls, fewer turns) when it has access to relevant memories? This is the most direct measure of memory's value.
+
+**Error rate:** Does memory reduce the frequency of incorrect actions? The feedback loop (Chapter 6) provides this signal directly — a high success rate among recalled memories indicates that memory is contributing positively.
+
+**Cold start comparison:** How does the agent perform on its first encounter with a problem type versus its fifth? If there is no improvement, memory isn't being stored or retrieved effectively.
+
+### Practical Evaluation Approaches
+
+For most teams, formal benchmarks are less practical than operational monitoring. A few signals are worth tracking from day one:
+
+- **Memory utilization rate:** How often does the agent actually search and use memory during tasks? Low utilization may indicate poor tool descriptions or insufficient memory content.
+- **Outcome-weighted retrieval:** What is the average success rate of recalled memories? This is the feedback loop metric — it tells you whether the memories the agent relies on are trustworthy.
+- **Memory growth rate vs retrieval quality:** As the memory store grows, does retrieval quality improve (more relevant memories available) or degrade (more noise to filter through)? This signals whether lifecycle management needs attention.
+
+Establishing these baselines early — even before the memory system is fully mature — provides the data needed to make informed tuning decisions later.
 
 ## Closing Thoughts
 

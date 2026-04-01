@@ -83,6 +83,14 @@ The bottom three — semantic, episodic, procedural — constitute long-term mem
 
 This infrastructure is the focus of the chapters that follow.
 
+## Context Engineering: Why Memory Retrieval Quality Matters
+
+The industry has broadly shifted from "prompt engineering" — optimizing how instructions are phrased — to what is increasingly called **context engineering**: optimizing what information is placed into the context alongside the instructions. The emerging consensus is that the quality of retrieved context has a larger impact on agent performance than the phrasing of the prompt itself.
+
+Memory retrieval is a core component of context engineering. When an agent faces a situation, the memories that are retrieved and injected into its context directly shape its reasoning, decisions, and actions. Poor retrieval — surfacing irrelevant, stale, or unverified memories — degrades the agent's performance regardless of how well the prompt is written. Effective retrieval — surfacing the most relevant, recent, and proven memories — gives the agent context that a perfectly crafted prompt cannot provide on its own.
+
+This framing is important because it positions memory not as a nice-to-have feature but as a critical component of agent quality. The design decisions explored in this book — what to store, how to score, how to handle staleness — are ultimately about maximizing the quality of context that reaches the agent at decision time.
+
 ## The Practical Boundary
 
 In practice, here's where the boundary tends to fall:
