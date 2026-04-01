@@ -11,5 +11,5 @@ build-dir = "book"
 [output.html]
 default-theme = "light"
 preferred-dark-theme = "ayu"
-git-repository-url = "https://github.com/ratnopam/agent-memory-patterns"
-edit-url-template = "https://github.com/ratnopam/agent-memory-patterns/edit/main/{path}"
+git-repository-url = "https://github.com/ratnopam/agentic-memory-patterns"
+edit-url-template = "https://github.com/ratnopam/agentic-memory-patterns/edit/main/{path}"
