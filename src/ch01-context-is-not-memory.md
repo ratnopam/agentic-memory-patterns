@@ -91,6 +91,18 @@ Memory retrieval is a core component of context engineering. When an agent faces
 
 This framing is important because it positions memory not as a nice-to-have feature but as a critical component of agent quality. The design decisions explored in this book — what to store, how to score, how to handle staleness — are ultimately about maximizing the quality of context that reaches the agent at decision time.
 
+## File-Based Agent Memory: The Static Foundation
+
+Before exploring dynamic memory systems, it's worth examining the simplest form of persistent agent context: human-authored instruction files that AI coding agents load at session start. These files have emerged as a de facto standard across the ecosystem. Claude Code loads `CLAUDE.md`, Cursor reads `.cursorrules`, GitHub Copilot looks for `copilot-instructions.md`, and Gemini CLI checks for `GEMINI.md`. The pattern is consistent: a markdown file containing project-specific guidance, conventions, and preferences that remains in context throughout the session.
+
+The Linux Foundation's Agentic Context Protocol has formalized this pattern with `AGENTS.md` as a vendor-neutral standard, already adopted by Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and Gemini CLI. The specification defines a scope hierarchy where files can exist at enterprise, personal, project, or subdirectory levels, with the file closest to the code taking precedence. This hierarchy allows general organizational standards to be overridden by project-specific conventions, which can themselves be overridden in specific directories.
+
+This approach solves the cold-start problem. From the first interaction in a new session, the agent understands project conventions without inference or interrogation. It knows which testing framework to use, which deployment patterns are preferred, which directories are protected, which style rules matter. For stable knowledge — the kind that changes rarely and applies consistently — static instruction files are effective and cheap. They require no retrieval infrastructure, no scoring logic, no staleness detection. They're just text, loaded once, always present.
+
+But they don't learn. When a debugging technique proves effective, when an incident reveals a new failure mode, when infrastructure changes invalidate previous assumptions — the file remains unchanged. There's no mechanism to capture outcomes, promote successful patterns, or deprecate advice that stopped working. The knowledge is static by design. Updates require human authorship, human judgment about what to keep and what to discard, and human effort to edit the file.
+
+This is where dynamic memory systems become necessary. File-based instructions establish the foundation — deliberate, curated knowledge about how work should be done. Dynamic memory, the focus of this book, captures what happened, which approaches succeeded, how understanding evolved through experience, and which stored knowledge remains relevant. The two operate at different ends of the memory spectrum. Static files answer "how should this work?" Dynamic memory answers "what actually worked, and does that knowledge still apply?"
+
 ## The Practical Boundary
 
 In practice, here's where the boundary tends to fall:
